@@ -47,6 +47,7 @@ function minimize_url() {
           } else {
              $('#res').hide().html("<input value=\""+html_quote(data.smurl)+"\" onfocus=\"this.select();\"><br><a href=\""+html_quote(data.smurl)+"\" target=_blank>проверка &rarr;</a>").show();
              $('#alias input').val('');
+             alias_close();
              $('#res input').select();
           }
         });
