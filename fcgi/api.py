@@ -17,7 +17,7 @@ def cmd_smurl_redirect(environ, start_response):
     con = smurl.db.getcon()
     cur = con.cursor()
 
-    cur.execute("SELECT id FROM domains WHERE domain = ?", [environ['HTTP_HOST']])
+    cur.execute("SELECT id FROM domains WHERE domain = ?", [environ['HTTP_HOST'].lower()])
     row = cur.fetchone()
     url = ''
     if row:
@@ -32,7 +32,7 @@ def cmd_smurl_redirect(environ, start_response):
     if url != '':
         start_response('302 Moved', [('Location', str(row[0]))])
     else:
-        start_response('404 Not Found', [()])
+        start_response('404 Not Found', [])
 
     return []
 
@@ -43,7 +43,7 @@ def cmd_smurl_api(environ, start_response):
     errors = []
 
     domain = 'smurl.ru'
-    subdomain = form.getfirst('subdomain', '')
+    subdomain = form.getfirst('subdomain', '').lower()
     if subdomain != '':
         if re.match(r"^[a-zA-Z0-9-]+$", subdomain):
             domain = subdomain + '.' + domain
