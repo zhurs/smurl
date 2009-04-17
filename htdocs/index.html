@@ -1,3 +1,4 @@
+<!-- -*- encoding: utf-8 -*- -->
 <html>
 <head>
   <title>smurl.ru - small/smart/... url</title>
@@ -7,7 +8,9 @@
     body { margin: 0; padding:0; color: black; background-color: white;}
     form { display: inline; }
     div.fp {text-align: center; padding-top: 10%;}
-    div.fp input{font-size: 180%; font-family: arial;}
+    .fp input { font-size: 1.8em; font-family: arial;}
+
+    .advanced, .advanced input { font-size: 1em; }
 
     .msg { margin: 1em 30%; padding: 0.5em;  width: 40%; border: 1px solid #ffbdba; background-color: #ffd3d0; color: #a83833; font-size: 1.3em; font-family: verdana; display: none; }
     .msg .close { float: right; margin: -0.8em -0.5em 0 0; cursor: pointer; }
@@ -18,22 +21,32 @@
         border: 1px solid #babdff; background-color: #d0d3ff; color: #3338a8;
         font-size: 2em; font-family: arial;
         }
+
+    .advanced { margin-bottom: 1em; font-size:1.5em; font-family: arial; }
+    #subdomain input, .underlined { border: 0px; border-bottom: 1px dashed #1a3dc1; color: #1a3dc1; padding-bottom: -10px; }
+    span.underlined { cursor: pointer; }
+    span.dot { padding: 0 2px; font-weight: normal;}
+
+    #alias span.gray { color: #aaa; }
   </style>
 </head>
-<body onload="$('#url').focus();">
+<body onload="fp_init();">
+  <form onsubmit="return minimize_url();">
   <div class="fp">
-      <form onsubmit="return minimize_url();">
-        <input id="url" style="width: 60%;" value="" onkeypress="change_url();"><input type="submit" value="&rarr;">
-      </form>
-      <div id="opt" style="display: none">= http://<input type=text value="" size=10>.smurl.ru/<input type="" size=10></div>
+      <div class="advanced">
+      Займи ссылку
+      http<span class="dot">://</span><span id="subdomain"></span>smurl<span class="dot">.</span>ru<span class=dot>/</span><span id="alias"></span>
+      </div>
+      <input id="url" style="width: 60%;" value="" onkeypress="change_url();"><input type="submit" value="&rarr;">
       <br clear=all>
       <div class="msg">
-        <span class="close" onclick="$(this).parent().hide()">&times;</span>
+        <span class="close" onclick="$(this).parent().hide(); $('#url').focus();">&times;</span>
         <span class="text">
         asdfadfasfd
         </span>
       </div>
       <div id="res"></div>
   </div>
+  </form>
 </body>
 </html>
