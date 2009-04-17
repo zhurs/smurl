@@ -45,8 +45,9 @@ function minimize_url() {
                show_msg('Что-то где-то сломалось?');
              }
           } else {
-             $('#res').hide().html("<a href=\""+data.smurl+"\" target=_blank>"+data.smurl+"</a>").show();
+             $('#res').hide().html("<input value=\""+html_quote(data.smurl)+"\" onfocus=\"this.select();\"><br><a href=\""+html_quote(data.smurl)+"\" target=_blank>проверка &rarr;</a>").show();
              $('#alias input').val('');
+             $('#res input').select();
           }
         });
 
