@@ -56,12 +56,7 @@ function minimize_url() {
 }
 
 function fp_init() {
-    var subdomain = Cookies.get('subdomain');
-    if (subdomain == null || subdomain == '') {
-        var m = document.location.hostname.match('^(.*)\.smurl\.ru$');
-        if (m) subdomain = m[1];
-    }
-    subdomain_close(subdomain);
+    subdomain_close(Cookies.get('subdomain'));
     alias_close();
     $('#url').focus();
 }
@@ -90,7 +85,7 @@ function subdomain_edit() {
 function subdomain_close(def) {
   var val = sel_val('#subdomain input', def).replace(/\s/g, '');
   if (val == '') {
-    Cookies.remove('subdomain');
+    Cookies.remove('subdomain', 'smurl.ru', '/');
     $('#subdomain').html("<span class=underlined onclick='subdomain_edit()'>&nbsp;&nbsp;&nbsp;</span>");
   } else if (subdomain_validate(val)) {
     Cookies.set('subdomain', val, 365*24, 'smurl.ru', '/');
