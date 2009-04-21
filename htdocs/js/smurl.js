@@ -56,7 +56,12 @@ function minimize_url() {
 }
 
 function fp_init() {
-    subdomain_close(Cookies.get('subdomain'));
+    var subdomain = Cookies.get('subdomain');
+    if (subdomain == null || subdomain == '') {
+        var m = document.location.hostname.match('^(.*)\.smurl\.ru$');
+        if (m) subdomain = m[1];
+    }
+    subdomain_close(subdomain);
     alias_close();
     $('#url').focus();
 }
