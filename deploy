@@ -1,0 +1,9 @@
+#!/usr/local/bin/bash -e
+
+DIR=/home/zhur/www/site1
+rsync -qa --delete ./htdocs/ $DIR/public_html/
+rsync -qa --delete ./webapp/ $DIR/webapp/
+
+touch $DIR/webapp/webapp.wcgi
+
+echo deployed

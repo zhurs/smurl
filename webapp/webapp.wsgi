@@ -1,9 +1,12 @@
-from flup.server.fcgi import WSGIServer
+import sys, os
+import re, md5, cgi
+
+sys.path.insert(0, '/home/zhur/www/site1/webapp/ext/json-py')
+sys.path.insert(0, '/home/zhur/www/site1/webapp')
 import json
-import os
+
 import smurl.settings as settings
 import smurl.db, smurl.code
-import re, md5, cgi
 
 def smurl_app(environ, start_response):
     form = cgi.FieldStorage(environ = environ)
@@ -17,14 +20,16 @@ def cmd_smurl_redirect(environ, start_response):
     con = smurl.db.getcon()
     cur = con.cursor()
 
-    cur.execute("SELECT id FROM domains WHERE domain = ?", [environ['HTTP_HOST'].lower()])
+    environ['HTTP_HOST'] = environ['HTTP_HOST'].replace('1.zhur.cz8.ru', 'smurl.ru') 
+
+    cur.execute("SELECT domain_id FROM domains WHERE domain = %s", [environ['HTTP_HOST'].lower()])
     row = cur.fetchone()
     url = ''
     if row:
         domain_id = row[0]
 
         alias = smurl.code.clean(environ['REQUEST_URI']);
-        cur.execute("SELECT url FROM urls WHERE domain_id = ? and alias = ?", [domain_id, alias])
+        cur.execute("SELECT url FROM urls WHERE domain_id = %s and alias = %s", [domain_id, alias])
         row = cur.fetchone()
         if row:
             url = str(row[0])
@@ -65,14 +70,14 @@ def cmd_smurl_api(environ, start_response):
         domain_row = get_domain(con, domain)
 
         if alias != '':
-            cur.execute("SELECT url FROM urls WHERE domain_id = ? and alias = ?", [domain_row['id'], alias])
+            cur.execute("SELECT url FROM urls WHERE domain_id = %s and alias = %s", [domain_row['domain_id'], alias])
             row = cur.fetchone()
             if row == None:
                 add_url(con, url, domain_row['id'], alias)
             elif row[0] != url:
                 errors.append('alias already busy "%s"' % alias)
         else:
-            alias = add_url_auto(con, url, domain_row['id'], domain_row['max_url_id'])
+            alias = add_url_auto(con, url, domain_row['domain_id'], domain_row['max_url_id'])
             if alias == '':
                 error.append('cant find free alias')
 
@@ -84,14 +89,14 @@ def cmd_smurl_api(environ, start_response):
 
 def get_domain(con, domain):
     cur = con.cursor()
-    cur.execute("SELECT id, max_url_id FROM domains WHERE domain = ?", [domain])
+    cur.execute("SELECT domain_id, max_url_id FROM domains WHERE domain = %s", [domain])
     row = cur.fetchone()
     if row == None:
-        cur.execute("INSERT INTO domains (domain, max_url_id) VALUES (?, 0)", [domain])
+        cur.execute("INSERT INTO domains (domain, max_url_id) VALUES (%s, 0)", [str(domain)])
         con.commit()
-        return dict(id = con.lastinsertid, max_url_id = 0)
+        return dict(domain_id = con.lastinsertid, max_url_id = 0)
     else:
-        return dict(id = row[0], max_url_id = 0)
+        return dict(domain_id = row[0], max_url_id = row[1])
 
 def get_url_hash(url):
     return long(md5.new(url).hexdigest(), 16) % 2**32
@@ -99,14 +104,14 @@ def get_url_hash(url):
 def add_url(con, url, domain_id, alias):
     cur = con.cursor()
     url_hash = get_url_hash(url)
-    cur.execute("INSERT INTO urls (domain_id, alias, url_hash, url) VALUES (?, ?, ?, ?)", [domain_id, alias, url_hash, url])
+    cur.execute("INSERT INTO urls (domain_id, alias, url_hash, url) VALUES (%s, %s, %s, %s)", [domain_id, alias, url_hash, url])
     con.commit()
     return alias
 
 def add_url_auto(con, url, domain_id, max_url_id):
     cur = con.cursor()
     url_hash = get_url_hash(url)
-    cur.execute("SELECT alias FROM urls WHERE domain_id = ? and url_hash = ?", [domain_id, url_hash])
+    cur.execute("SELECT alias FROM urls WHERE domain_id = %s and url_hash = %s", [domain_id, url_hash])
     row = cur.fetchone()
     if row != None:
         alias = row[0]
@@ -116,13 +121,14 @@ def add_url_auto(con, url, domain_id, max_url_id):
             max_url_id = max_url_id + 1
             try_alias = smurl.code.encode(max_url_id)
             try:
-                cur.execute("INSERT INTO urls (domain_id, alias, url_hash, url) VALUES (?, ?, ?, ?)", [domain_id, try_alias, url_hash, url])
+                cur.execute("INSERT INTO urls (domain_id, alias, url_hash, url) VALUES (%s, %s, %s, %s)", [domain_id, try_alias, url_hash, url])
                 alias = try_alias
                 break
             except:
                 None
-        cur.execute("UPDATE domains SET max_url_id = ? WHERE id = ?", [max_url_id, domain_id])
+        cur.execute("UPDATE domains SET max_url_id = %s WHERE domain_id = %s", [max_url_id, domain_id])
         con.commit()
     return alias
 
-WSGIServer(smurl_app, bindAddress = settings.SOCK, umask = 0, multithreaded=False, multiprocess=False).run()
+application = smurl_app
+#WSGIServer(smurl_app, bindAddress = settings.SOCK, umask = 0, multithreaded=False, multiprocess=False).run()

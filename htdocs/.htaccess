@@ -1,0 +1,5 @@
+RewriteEngine On
+
+RewriteRule ^/*api/(.*)$ /webapp/$1 [L] 
+RewriteRule ^/*([a-zA-Z0-9\-_]+)$ /webapp/$1 [L] 
+

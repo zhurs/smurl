@@ -1,10 +1,6 @@
-from pysqlite2 import dbapi2 as sqlite
+import MySQLdb
 import smurl.settings as settings
 
 def getcon():
-    return sqlite.connect(settings.DB)
-
-def getcur():
-    con = sqlite.connect(settings.DB)
-    return con.cursor()
+    return MySQLdb.connect(user="dbu_zhur_1",passwd="e6InK0BMfXz",db="db_zhur_1")
 
